@@ -1,0 +1,63 @@
+# Import necessary libraries
+import streamlit as st
+from pymongo import MongoClient
+
+# Connect to MongoDB
+client = MongoClient('mongodb://localhost:27017/')
+db = client['test_database']
+collection = db['students']
+
+# Define CRUD operations
+def create_student(student_name, student_id, email, grade):
+    student_data = {'student_name': student_name, 'student_id': student_id, 'email': email, 'grade': grade}
+    collection.insert_one(student_data)
+
+def read_students():
+    return collection.find()
+
+def update_student(student_id, new_student_name, new_email, new_grade):
+    update_data = {'student_name': new_student_name, 'email': new_email, 'grade': new_grade}
+    collection.update_one({'student_id': student_id}, {'$set': update_data})
+
+def delete_student(student_id):
+    collection.delete_one({'student_id': student_id})
+
+# Streamlit UI
+def main():
+    st.title('MongoDB CRUD Operations with Streamlit')
+
+    # Create
+    st.subheader('Create Student')
+    student_name = st.text_input('Student Name')
+    student_id = st.text_input('Student ID')
+    email = st.text_input('Email')
+    grade = st.text_input('Grade')
+    if st.button('Add Student'):
+        create_student(student_name, student_id, email, grade)
+        st.success('Student added successfully!')
+
+    # Read
+    st.subheader('Read Students')
+    students = read_students()
+    for student in students:
+        st.write(f"Name: {student['student_name']}, ID: {student['student_id']}, Email: {student['email']}, Grade: {student['grade']}")
+
+    # Update
+    st.subheader('Update Student')
+    update_id = st.text_input('Student ID to update')
+    new_name = st.text_input('New Name')
+    new_email = st.text_input('New Email')
+    new_grade = st.text_input('New Grade')
+    if st.button('Update Student'):
+        update_student(update_id, new_name, new_email, new_grade)
+        st.success('Student updated successfully!')
+
+    # Delete
+    st.subheader('Delete Student')
+    delete_id = st.text_input('Student ID to delete')
+    if st.button('Delete Student'):
+        delete_student(delete_id)
+        st.success('Student deleted successfully!')
+
+if _name_ == '_main_':
+    main()
